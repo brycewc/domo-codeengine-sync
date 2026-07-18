@@ -1,0 +1,28 @@
+{
+  "name": "domo-codeengine-sync",
+  "version": "0.1.0",
+  "description": "GitHub Action + CLI that syncs a Domo Code Engine package definition from its JSDoc and deploys a new version on push.",
+  "type": "module",
+  "bin": {
+    "domo-codeengine-sync": "bin/cli.js"
+  },
+  "scripts": {
+    "build": "ncc build src/index.js -o dist --source-map",
+    "test": "node --test"
+  },
+  "keywords": [
+    "domo",
+    "code-engine",
+    "github-action",
+    "jsdoc",
+    "deploy"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "@actions/core": "^1.11.1",
+    "domo-codeengine-manifest": "file:../domo-codeengine-manifest"
+  },
+  "devDependencies": {
+    "@vercel/ncc": "^0.38.3"
+  }
+}

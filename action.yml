@@ -1,0 +1,34 @@
+name: 'Domo Code Engine Sync'
+description: 'Sync a Domo Code Engine package definition from its JSDoc and deploy a new version on push.'
+author: 'brycewc'
+branding:
+  icon: 'upload-cloud'
+  color: 'blue'
+inputs:
+  instance:
+    description: 'Domo instance subdomain (e.g. "acme" for acme.domo.com) or a full base URL. Optional if set in the config file.'
+    required: false
+  developer-token:
+    description: 'Domo developer access token. Prefer passing it via the DOMO_DEVELOPER_TOKEN env var from a secret instead of this input.'
+    required: false
+  config-path:
+    description: 'Path to a domo-codeengine.json config file. Defaults to ./domo-codeengine.json when present.'
+    required: false
+  package-id:
+    description: 'Code Engine package UUID. Single-package mode; ignored when the config file lists packages.'
+    required: false
+  source-path:
+    description: 'Path to the package source .js file. Single-package mode.'
+    required: false
+  release:
+    description: 'Release (deploy) the new version after creating it. Set false to only stage an unreleased version.'
+    required: false
+    default: 'true'
+outputs:
+  versions:
+    description: 'Comma-separated packageId@version list of the packages that were synced.'
+  results:
+    description: 'JSON array of per-package results (version, mode, released, added, updated).'
+runs:
+  using: 'node20'
+  main: 'dist/index.js'

@@ -1,0 +1,20 @@
+# Copy this into a consumer repo at .github/workflows/deploy-code-engine.yml
+name: Deploy Code Engine Package
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/**.js'
+      - 'domo-codeengine.json'
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: brycewc/domo-codeengine-sync@v1
+        env:
+          DOMO_DEVELOPER_TOKEN: ${{ secrets.DOMO_DEVELOPER_TOKEN }}
+        with:
+          # instance/package-id/source-path can live here or in domo-codeengine.json
+          instance: acme
+          # release: 'false'   # uncomment to stage an unreleased version instead of deploying

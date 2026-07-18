@@ -1,0 +1,10 @@
+{
+  "instance": "acme",
+  "packages": [
+    {
+      "packageId": "00000000-0000-0000-0000-000000000000",
+      "sourcePath": "src/my-package.js",
+      "release": true
+    }
+  ]
+}

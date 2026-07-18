@@ -1,0 +1,33 @@
+name: build
+on:
+  push:
+  pull_request:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: domo-codeengine-sync
+      # Pre-publish: the parser package is consumed via file:../ so check it out
+      # as a sibling. Once domo-codeengine-manifest is published to npm and the
+      # dependency points at the registry, this step can be removed.
+      - uses: actions/checkout@v4
+        with:
+          repository: brycewc/domo-codeengine-manifest
+          path: domo-codeengine-manifest
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install
+        working-directory: domo-codeengine-sync
+        run: yarn install --frozen-lockfile
+      - name: Test
+        working-directory: domo-codeengine-sync
+        run: yarn test
+      - name: Build
+        working-directory: domo-codeengine-sync
+        run: yarn build
+      - name: Verify dist/ is committed and up to date
+        working-directory: domo-codeengine-sync
+        run: git diff --exit-code dist/ || (echo "::error::dist/ is stale. Run 'yarn build' and commit the result." && exit 1)
