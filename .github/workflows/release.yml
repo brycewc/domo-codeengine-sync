@@ -1,0 +1,59 @@
+name: release
+on:
+  push:
+    tags:
+      - 'v*.*.*' # semver release tags only (v1.0.0), not the moving major tag (v1)
+permissions:
+  contents: write
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: domo-codeengine-sync
+          fetch-depth: 0
+      # Pre-publish: the parser package is consumed via file:../ so check it out
+      # as a sibling. Remove once domo-codeengine-manifest is on npm.
+      - uses: actions/checkout@v4
+        with:
+          repository: brycewc/domo-codeengine-manifest
+          path: domo-codeengine-manifest
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install
+        working-directory: domo-codeengine-sync
+        run: yarn install --frozen-lockfile
+      # Never move the major tag onto a commit whose committed dist/ is stale;
+      # a JS action runs the committed bundle, so a stale dist/ ships broken code.
+      - name: Verify committed dist/ is current
+        working-directory: domo-codeengine-sync
+        run: |
+          yarn build
+          git diff --exit-code dist/ || {
+            echo "::error::dist/ at ${GITHUB_REF_NAME} is stale. Run 'yarn build', commit, and re-tag."
+            exit 1
+          }
+      - name: Move the major tag (e.g. v1 -> v1.2.3)
+        working-directory: domo-codeengine-sync
+        run: |
+          set -e
+          TAG="${GITHUB_REF_NAME}"   # v1.2.3
+          MAJOR="${TAG%%.*}"          # v1
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git tag -f "$MAJOR" "$GITHUB_SHA"
+          git push -f origin "refs/tags/$MAJOR"
+          echo "Moved $MAJOR -> $TAG ($GITHUB_SHA)"
+      - name: Create or update the GitHub Release
+        working-directory: domo-codeengine-sync
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "Release $TAG already exists; leaving it as-is."
+          else
+            gh release create "$TAG" --title "$TAG" --generate-notes
+          fi
