@@ -35706,7 +35706,7 @@ function computeLineOffsets(source) {
 
 const FN_DECL_PATTERNS = [
   /^\s*(?:export\s+)?(?:async\s+)?function\s*\*?\s*([A-Za-z_$][\w$]*)/,
-  /^\s*(?:export\s+)?(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=\s*(?:async\s*)?(?:function\s*\*?\s*[A-Za-z_$\w$]*\s*)?\(/,
+  /^\s*(?:export\s+)?(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=\s*(?:async\s*)?(?:function\s*\*?\s*[\w$]*\s*)?\(/,
   /^\s*(?:export\s+)?(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=\s*(?:async\s*)?\(/,
   /^\s*(?:async\s+)?([A-Za-z_$][\w$]*)\s*\(/
 ];
@@ -35926,7 +35926,10 @@ function serializeJSDocDefault(value) {
   if (value === null) return 'null';
   if (typeof value === 'boolean') return value ? 'true' : 'false';
   if (typeof value === 'number') return String(value);
-  if (typeof value === 'string') return `'${value.replace(/'/g, "\\'")}'`;
+  // Backslashes must be escaped before quotes, or the escapes added for quotes get
+  // doubled. Skipping backslashes entirely lets a value ending in one (`C:\path\`)
+  // escape the closing quote and corrupt the emitted JSDoc.
+  if (typeof value === 'string') return `'${value.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'`;
   if (Array.isArray(value)) {
     if (value.length === 0) return '[]';
     return JSON.stringify(value);
