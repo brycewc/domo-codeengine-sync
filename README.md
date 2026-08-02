@@ -16,7 +16,7 @@ It is the headless equivalent of the Domo Toolkit extension's "Generate Definiti
 ## Usage
 
 ````yaml
-# .github/workflows/sync-code-engine.yml
+# .github/workflows/sync-code-engine.yaml
 name: Sync Code Engine Package
 
 # Pushes to main that touch the package source (or its config) sync the Code

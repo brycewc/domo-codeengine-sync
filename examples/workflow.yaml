@@ -1,4 +1,4 @@
-# Copy this into a consumer repo at .github/workflows/sync-code-engine.yml
+# Copy this into a consumer repo at .github/workflows/sync-code-engine.yaml
 name: Sync Code Engine Package
 
 # Pushes to main that touch the package source (or its config) sync the Code
