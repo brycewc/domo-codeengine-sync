@@ -9,17 +9,17 @@ jobs:
   release:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           path: domo-codeengine-sync
           fetch-depth: 0
       # Pre-publish: the parser package is consumed via file:../ so check it out
       # as a sibling. Remove once domo-codeengine-manifest is on npm.
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           repository: brycewc/domo-codeengine-manifest
           path: domo-codeengine-manifest
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: 20
       - name: Install
