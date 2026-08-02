@@ -15,24 +15,55 @@ It is the headless equivalent of the Domo Toolkit extension's "Generate Definiti
 
 ## Usage
 
-```yaml
-# .github/workflows/deploy-code-engine.yml
-name: Deploy Code Engine Package
+````yaml
+# .github/workflows/sync-code-engine.yml
+name: Sync Code Engine Package
+
+# Pushes to main that touch the package source (or its config) sync the Code
+# Engine definition in Domo from the JSDoc in main.js. instance, packageId, and
+# release live in domo-codeengine.json so this workflow stays boilerplate.
 on:
   push:
     branches: [main]
-    paths: ['src/**.js', 'domo-codeengine.json']
+    paths:
+      - 'main.js'
+      - 'domo-codeengine.json'
+  # Lets you re-run the sync from the Actions tab without pushing a commit.
+  workflow_dispatch:
+
 jobs:
   sync:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: brycewc/domo-codeengine-sync@v1
+
+      - id: sync
+        uses: brycewc/domo-codeengine-sync@v1
         env:
           DOMO_DEVELOPER_TOKEN: ${{ secrets.DOMO_DEVELOPER_TOKEN }}
-        with:
-          instance: acme
-```
+
+      - name: Summarize
+        if: always() && steps.sync.outputs.results != ''
+        env:
+          RESULTS: ${{ steps.sync.outputs.results }}
+          VERSIONS: ${{ steps.sync.outputs.versions }}
+        run: |
+          {
+            echo '### Domo Code Engine sync'
+            echo ''
+            if [ -n "$VERSIONS" ]; then
+              echo "Synced: \`$VERSIONS\`"
+            else
+              echo 'Nothing to sync, the definition already matches the JSDoc.'
+            fi
+            echo ''
+            echo '```json'
+            echo "$RESULTS"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+````
+
+The `Summarize` step is optional: it writes the sync result to the run's job summary. Drop it if you don't want one.
 
 ### Configuration
 
@@ -41,7 +72,7 @@ Provide a committed `domo-codeengine.json` (supports multiple packages):
 ```json
 {
   "instance": "acme",
-  "packages": [{ "packageId": "…", "sourcePath": "src/my-package.js", "release": true }]
+  "packages": [{ "packageId": "…", "sourcePath": "main.js", "release": true }]
 }
 ```
 
@@ -62,10 +93,10 @@ The **developer token** always comes from the `DOMO_DEVELOPER_TOKEN` secret/env,
 
 ### Outputs
 
-| Output     | Description                                                     |
-| ---------- | -------------------------------------------------------------- |
-| `versions` | Comma-separated `packageId@version` list of synced packages.   |
-| `results`  | JSON array of per-package results.                             |
+| Output     | Description                                                                                     |
+| ---------- | ----------------------------------------------------------------------------------------------- |
+| `versions` | Comma-separated `packageId@version` list of synced packages. Empty when nothing changed.        |
+| `results`  | JSON array of per-package results. Also set to the partial results when the run fails.          |
 
 ## CLI
 
