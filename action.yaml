@@ -30,5 +30,5 @@ outputs:
   results:
     description: 'JSON array of per-package results (version, mode, released, added, updated).'
 runs:
-  using: 'node20'
+  using: 'node24'
   main: 'dist/index.js'

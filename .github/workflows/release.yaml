@@ -21,7 +21,7 @@ jobs:
           path: domo-codeengine-manifest
       - uses: actions/setup-node@v5
         with:
-          node-version: 20
+          node-version: 24
       - name: Install
         working-directory: domo-codeengine-sync
         run: yarn install --frozen-lockfile
